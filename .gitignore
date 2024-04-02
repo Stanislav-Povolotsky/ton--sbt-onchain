@@ -5,6 +5,7 @@ dist
 .DS_Store
 .vscode
 /collection.json
+/test-results
 
 # yarn
 .yarn/*
