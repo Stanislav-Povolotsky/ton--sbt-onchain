@@ -1,0 +1,1 @@
+int builder_null?(builder b) asm "ISNULL";

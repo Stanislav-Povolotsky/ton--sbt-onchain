@@ -1,0 +1,104 @@
+#include "tuples.fc";
+
+;; TOKEN METADATA
+;; https://github.com/ton-blockchain/TEPs/blob/master/text/0064-token-data-standard.md
+
+const ONCHAIN_FORMAT_PREFIX = 0x00;
+const OFFCHAIN_FORMAT_PREFIX = 0x01;
+
+;; Snake format when we store part of the data in a cell and the rest of the data in 
+;; the first child cell (and so recursively). Must be prefixed with 0x00 byte.
+;; TL-B scheme:
+;;   tail#_ {bn:#} b:(bits bn) = SnakeData ~0;
+;;   cons#_ {bn:#} {n:#} b:(bits bn) next:^(SnakeData ~n) = SnakeData ~(n + 1);
+const CONTENT_DATA_FORMAT_SNAKE = 0x00;
+
+;; Chunked format when we store data in dictionary chunk_index -> chunk. 
+;; Must be prefixed with 0x01 byte. 
+;; TL-B scheme:
+;; chunked_data#_ data:(HashMapE 32 ^(SnakeData ~0)) = ChunkedData;
+const CONTENT_DATA_FORMAT_CHUNKED = 0x01;
+
+;; Key is sha256 hash of string. Value is data encoded as described in "Data serialization" paragraph.
+;; Snake format - must be prefixed with 0x00 byte
+(cell, ()) ~set_token_snake_metadata_entry(cell content_dict, int key, slice value) impure {
+    content_dict~udict_set_ref(256, key, begin_cell().store_uint(0, 8).store_slice(value).end_cell());
+    return (content_dict, ());
+}
+
+;; On-chain content layout The first byte is 0x00 and the rest is key/value dictionary.
+cell create_token_onchain_metadata(cell content_dict) inline {
+    return begin_cell().store_uint(0, 8).store_dict(content_dict).end_cell();
+}
+
+;; Concatenate s1 and s2 (both in snake format)
+cell append_onchain_str_both_snake(slice s1, slice s2) inline {
+    var t = empty_tuple();
+
+    while((slice_bits(s1) > 0) | (slice_refs(s1) > 0)) {
+        var bits = slice_bits(s1);
+        if(bits > 0) {
+            t~tpush(begin_cell().store_slice(s1~load_bits(bits)));
+        } else {
+            s1 = s1~load_ref().begin_parse();
+        }
+    }
+
+    s2~skip_bits(8); ;; skip format byte
+    while((slice_bits(s2) > 0) | (slice_refs(s2) > 0)) {
+        var bits = slice_bits(s2);
+        if(bits > 0) {
+            t~tpush(begin_cell().store_slice(s2~load_bits(bits)));
+        } else {
+            s2 = s2~load_ref().begin_parse();
+        }
+    }
+
+    builder b = t~tuples::tpop(); ;; tuple is always non-empty because first element contains prefix with the format byte
+    while(tuples::tlen(t)) {
+        builder nb = t~tuples::tpop();
+        nb = nb.store_ref(b.end_cell());
+        b = nb;
+    }
+    return b.end_cell();
+}
+
+;; Concatenate s1 and s2 (both in chunked format)
+cell append_onchain_str_both_chunked(slice s1, slice s2) inline {
+    cell d1 = s1~load_dict();
+    cell d2 = s2~load_dict();
+
+    if(dict_empty?(d1)) {
+        d1 = d2;
+    } elseif(dict_empty?(d2)) {
+        ;; nothing to do, just return d1
+    } else {
+        (int base_idx, _, int f) = udict_get_max?(d1, 32);
+        base_idx = base_idx + 1;
+
+        var idx = -1;
+        do {
+            (idx, var cs, var f) = d2.udict_get_next?(32, idx);
+            if (f) {
+                (var c, _) = d2.udict_get_ref?(32, idx);
+                d1~udict_set_ref(32, base_idx + idx, c);
+            }
+        } until (~ f);
+    }
+
+    return begin_cell().store_uint(CONTENT_DATA_FORMAT_CHUNKED, 8).store_dict(d1).end_cell();
+}
+
+;; Try to concatenate s1 and s2. 
+;; Both s1 and s2 must be in the same format (snake or chunked)
+cell append_onchain_str(slice s1, slice s2) {
+    var f1 = (slice_bits(s1) >= 8) ? s1.preload_uint(8) : -1;
+    var f2 = (slice_bits(s2) >= 8) ? s2.preload_uint(8) : -1;
+
+    throw_if(10000, f1 != f2);
+    throw_if(10001, (f1 != CONTENT_DATA_FORMAT_SNAKE) & (f1 != CONTENT_DATA_FORMAT_CHUNKED));
+        
+    return (f1 == CONTENT_DATA_FORMAT_SNAKE) ? 
+        append_onchain_str_both_snake(s1, s2) :
+        append_onchain_str_both_chunked(s1, s2);
+}

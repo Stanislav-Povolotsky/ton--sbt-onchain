@@ -1,0 +1,15 @@
+node_modules
+temp
+build
+dist
+.DS_Store
+.vscode
+/collection.json
+
+# yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
