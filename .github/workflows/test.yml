@@ -17,7 +17,7 @@ jobs:
 
       - name: Run tests
         run: |
-         !mkdir ./test-results
+         mkdir ./test-results || true
          npx jest --verbose --json --outputFile=results.json
 
       - name: Publish test results
