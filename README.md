@@ -11,6 +11,10 @@ Based on [Getgems NFT contracts](https://github.com/getgems-io/nft-contracts/)
 
 ## How to use
 
+### Install all packages
+
+`npm install`
+
 ### Build
 
 `npx blueprint build` or `yarn blueprint build`
