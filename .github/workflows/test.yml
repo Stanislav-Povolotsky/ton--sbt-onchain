@@ -34,6 +34,6 @@ jobs:
           badges:
             - label: Tests
               message: Jest
-              color: ${{ job.status == 'success' ? 'green' : 'red' }}  # Set color based on test status
-              link: "github.com/${{ github.repository }}/actions"  # Link to Actions workflow
+              color: ${{ job.status == 'success' ? 'green' : 'red' }}
+              link: "github.com/${{ github.repository }}/actions"
 
