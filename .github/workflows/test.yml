@@ -25,15 +25,3 @@ jobs:
         with:
           name: test-results
           path: coverage/
-
-      - name: Update README with test results
-        uses: dawidd6/action-markdown-badges@v3
-        if: always()
-        with:
-          file: README.md
-          badges:
-            - label: Tests
-              message: Jest
-              color: ${{ job.status == 'success' ? 'green' : 'red' }}
-              link: "github.com/${{ github.repository }}/actions"
-
