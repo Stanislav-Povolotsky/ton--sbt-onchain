@@ -6,6 +6,7 @@ dist
 .vscode
 /collection.json
 /test-results
+/coverage
 
 # yarn
 .yarn/*

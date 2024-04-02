@@ -12,7 +12,9 @@ const config: Config = {
     cache: false,
     verbose: true,
     testTimeout: 60000,
-    reporters: reporters
+    reporters: reporters,
+    collectCoverage: true,
+    coverageReporters: ['json', 'lcov'],
 };
 
 export default config;
