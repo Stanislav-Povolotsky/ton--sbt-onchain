@@ -18,7 +18,7 @@ jobs:
       - name: Run tests
         run: |
          mkdir ./test-results || true
-         npx jest --verbose --json --outputFile=results.json
+         npx jest --verbose --json --outputFile=./test-results/results.json
 
       - name: Publish test results
         uses: actions/upload-artifact@v2
