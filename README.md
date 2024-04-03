@@ -1,5 +1,5 @@
 # TON SBT with onchain metadata
-![test workflow result](https://github.com/Stanislav-Povolotsky/ton--sbt-onchain/actions/workflows/test.yml/badge.svg)
+[![test workflow result](https://github.com/Stanislav-Povolotsky/ton--sbt-onchain/actions/workflows/test.yml/badge.svg)](https://github.com/Stanislav-Povolotsky/ton--sbt-onchain/actions/workflows/test.yml)
 
 Based on [Getgems NFT contracts](https://github.com/getgems-io/nft-contracts/)
 
