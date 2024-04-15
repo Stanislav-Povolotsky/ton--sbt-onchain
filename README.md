@@ -2,6 +2,7 @@
 [![test workflow result](https://github.com/Stanislav-Povolotsky/ton--sbt-onchain/actions/workflows/test.yml/badge.svg)](https://github.com/Stanislav-Povolotsky/ton--sbt-onchain/actions/workflows/test.yml)
 
 This is an on-chain implementation (all collection/token metadata is stored on the blockchain as as collection/token contract data), you can find the off-chain implementation [here](https://github.com/Stanislav-Povolotsky/ton--sbt-offchain).  
+  
 Based on [Getgems NFT contracts](https://github.com/getgems-io/nft-contracts/)
 
 ## Project structure
